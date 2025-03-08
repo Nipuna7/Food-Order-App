@@ -1,19 +1,18 @@
 class UserModel {
-  String? uid;
-  String? email;
-  String? name;
-  String? contactNumber;
-  String? profilePicture; // Base64 encoded string
+  final String uid;
+  final String email;
+  final String name;
+  final String contactNumber;
+  final String profilePicture;
 
   UserModel({
-    this.uid,
-    this.email,
-    this.name,
-    this.contactNumber,
-    this.profilePicture,
+    required this.uid,
+    required this.email,
+    required this.name,
+    required this.contactNumber,
+    required this.profilePicture,
   });
 
-  // Convert UserModel to a Map
   Map<String, dynamic> toMap() {
     return {
       'uid': uid,
@@ -24,7 +23,6 @@ class UserModel {
     };
   }
 
-  // Create UserModel from a Map
   factory UserModel.fromMap(Map<String, dynamic> map) {
     return UserModel(
       uid: map['uid'],

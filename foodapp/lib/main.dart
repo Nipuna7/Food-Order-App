@@ -1,6 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:foodapp/screens/edit_profile_screen.dart';
+import 'package:foodapp/screens/froget_password_screen.dart';
 import 'package:foodapp/screens/loading_screen.dart';
+import 'package:foodapp/screens/profile_screen.dart';
+import 'package:foodapp/screens/sign_in_screen.dart';
+import 'package:foodapp/screens/sign_up_screen.dart';
 
 
 
@@ -18,9 +23,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Food Order App',
       debugShowCheckedModeBanner: false,
-      initialRoute: '/loading_page', // Set initial route to HomeScreen
+      initialRoute: '/sign_in_page', // Set initial route to HomeScreen
       routes: {
         '/loading_page':(context)=>LoadingScreen(),
+        '/sign_in_page':(context)=>SignInScreen(),
+        '/sign_up_page':(context)=>SignUpScreen(),
+        '/froget_password':(context)=>ForgotPasswordScreen(),
+        
       },
     );
   }

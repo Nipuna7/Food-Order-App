@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class LoadingScreen extends StatefulWidget {
+  const LoadingScreen({super.key});
+
   @override
   _LoadingPageState createState() => _LoadingPageState();
 }
@@ -26,7 +28,7 @@ class _LoadingPageState extends State<LoadingScreen> {
         child: AnimatedOpacity(
           opacity: _opacity, // Use the animated opacity value
           duration: Duration(seconds: 2), // Animation duration
-          child: Container(
+          child: SizedBox(
             height: 350, // Set height to 400px
             width: 250, // Set width to 300px
             child: Image.asset(
