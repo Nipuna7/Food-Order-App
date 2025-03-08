@@ -1,9 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:foodapp/screens/edit_profile_screen.dart';
 import 'package:foodapp/screens/froget_password_screen.dart';
 import 'package:foodapp/screens/loading_screen.dart';
-import 'package:foodapp/screens/profile_screen.dart';
 import 'package:foodapp/screens/sign_in_screen.dart';
 import 'package:foodapp/screens/sign_up_screen.dart';
 

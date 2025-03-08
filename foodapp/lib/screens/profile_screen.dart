@@ -118,13 +118,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         SizedBox(height: 4),
-        Text(
-          _currentUser.email,
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey,
-          ),
-        ),
       ],
     );
   }
@@ -135,13 +128,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
       ),
+      
       child: Padding(
-        padding: EdgeInsets.all(20),
+        padding: EdgeInsets.all(12),
         child: Column(
+
           children: [
+            _buildInfoItem(Icons.email, 'Email', _currentUser.email.isEmpty ? 'Not provided' : _currentUser.email),
+            Divider(),
             _buildInfoItem(Icons.phone, 'Contact Number', _currentUser.contactNumber.isEmpty ? 'Not provided' : _currentUser.contactNumber),
-            Divider(height: 30),
-            _buildInfoItem(Icons.person, 'User ID', _currentUser.uid),
+            
+    
           ],
         ),
       ),
