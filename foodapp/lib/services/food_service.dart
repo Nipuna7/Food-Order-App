@@ -6,14 +6,20 @@ class FoodService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Add a new food item
-  Future<String?> addFood(FoodModel food) async {
+  Future<String?> addFood(Map<String, dynamic> foodMap) async {
     try {
-      DocumentReference docRef = await _firestore.collection('foods').add(food.toMap());
-      
-      // Update the food with the generated ID
+      // Debug: Print the foodMap to verify its contents
+      debugPrint("Sending to Firestore: $foodMap");
+
+      // Add the document to Firestore
+      DocumentReference docRef = await _firestore.collection('foods').add(foodMap);
+
+      // Update the document with the generated ID
       await docRef.update({'id': docRef.id});
-      
+
+      // Debug: Print the generated ID
       debugPrint("Food added successfully with ID: ${docRef.id}");
+
       return docRef.id;
     } on FirebaseException catch (e) {
       debugPrint("Firebase Error: ${e.message}");
