@@ -1,96 +1,87 @@
 import 'package:flutter/material.dart';
-import 'package:foodapp/models/user_model.dart';
-import 'package:foodapp/screens/user/profile_screen.dart'; // Import ProfileScreen
+import 'package:foodapp/services/auth_service.dart';
+import 'package:foodapp/widgets/user_navbar.dart';
 
-class HomeScreen extends StatelessWidget {
-  final UserModel user;
 
-  const HomeScreen({super.key, required this.user});
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _currentIndex = 0;
+  String _greeting = "";
+  String _username = "";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserDetails();
+  }
+
+  void _fetchUserDetails() async {
+    final authService = AuthService();
+    final user = await authService.getCurrentUser();
+    if (user != null) {
+      setState(() {
+        _username = user.name;
+        _greeting = _getGreeting();
+      });
+    }
+  }
+
+  String _getGreeting() {
+    int hour = DateTime.now().hour;
+    if (hour >= 5 && hour < 12) {
+      return "Good Morning";
+    } else if (hour >= 12 && hour < 17) {
+      return "Good Afternoon";
+    } else {
+      return "Good Evening";
+    }
+  }
+
+  void _onTabTapped(int index) {
+    setState(() {
+      _currentIndex = index;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF5F5F5),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Color(0xFFFF6B01),
         title: Text(
-          'Home',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          '$_greeting, $_username',
+          style: TextStyle(
+            fontSize: 18,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        centerTitle: true,
+        backgroundColor: Colors.white,
+        automaticallyImplyLeading: false,
         actions: [
-          // Add a profile icon button
           IconButton(
-            icon: Icon(Icons.person, color: Colors.white),
+            icon: Icon(Icons.shopping_cart, color: Colors.black), // Cart icon
             onPressed: () {
-              // Navigate to ProfileScreen with the current user
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ProfileScreen(user: user),
-                ),
-              );
+              // Add navigation to cart screen or functionality
+              print("Cart icon pressed");
             },
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 20),
-            Text(
-              'Welcome, ${user.name}!',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'Your email: ${user.email}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey,
-              ),
-            ),
-            SizedBox(height: 30),
-            Expanded(
-              child: Center(
-                child: Text(
-                  'Home Screen Content Goes Here',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey,
-                  ),
-                ),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color(0xFFFF6B01),
-                padding: EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                minimumSize: Size(double.infinity, 50),
-              ),
-              child: Text(
-                'LOG OUT',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
+
+
+      body: IndexedStack(
+        index: _currentIndex,
+      ),
+      bottomNavigationBar: UserNavbar(
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
       ),
     );
   }

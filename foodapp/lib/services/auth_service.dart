@@ -314,4 +314,22 @@ class AuthService {
   bool _isValidEmail(String email) {
     return RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
   }
+
+
+   // Get current user data
+  Future<UserModel?> getCurrentUser() async {
+    try {
+      final User? user = _auth.currentUser;
+      if (user != null) {
+        DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
+        if (doc.exists) {
+          return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error getting current user: $e');
+      return null;
+    }
+  }
 }
