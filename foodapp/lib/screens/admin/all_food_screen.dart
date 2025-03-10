@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/food_model.dart';
-import 'package:foodapp/screens/admin/admin_edit_food_screen.dart';
-import 'package:foodapp/screens/admin/admin_food_details_screen.dart';
+import 'package:foodapp/screens/admin/edit_food_screen.dart';
+import 'package:foodapp/screens/admin/food_details_screen.dart';
 import 'package:foodapp/services/food_service.dart';
 import 'dart:convert';
 

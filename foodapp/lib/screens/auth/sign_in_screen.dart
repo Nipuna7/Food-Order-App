@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/user_model.dart';
-import 'package:foodapp/screens/froget_password_screen.dart';
-import 'package:foodapp/screens/home_screen.dart';
-import 'package:foodapp/screens/sign_up_screen.dart';
+import 'package:foodapp/screens/auth/froget_password_screen.dart';
+import 'package:foodapp/screens/user/home_screen.dart';
+import 'package:foodapp/screens/auth/sign_up_screen.dart';
 import 'package:foodapp/services/auth_service.dart';
 
 class SignInScreen extends StatefulWidget {
@@ -162,7 +162,7 @@ class _SignInScreenState extends State<SignInScreen> {
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ForgotPasswordScreen()), // Use MaterialPageRoute to navigate
+              MaterialPageRoute(builder: (context) => ForgotPasswordScreen()),
             );
           },
           child: Text(
@@ -302,11 +302,17 @@ class _SignInScreenState extends State<SignInScreen> {
       UserModel? user = await _authService.signInWithEmailAndPassword(email, password);
       
       if (user != null) {
-        // Navigate to Home Screen
-        Navigator.pushReplacement(
-          context, 
-          MaterialPageRoute(builder: (context) => HomeScreen(user: user))
-        );
+        // Check if user is admin and navigate accordingly
+        if (user.isAdmin) {
+          // Navigate to Admin Screen
+          Navigator.pushReplacementNamed(context, '/admin_all_food_screen');
+        } else {
+          // Navigate to User Home Screen
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => HomeScreen(user: user))
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Sign in failed. Please check your credentials.')),
@@ -339,11 +345,17 @@ class _SignInScreenState extends State<SignInScreen> {
       UserModel? user = await _authService.signInWithGoogle();
       
       if (user != null) {
-        // Navigate to Home Screen
-        Navigator.pushReplacement(
-          context, 
-          MaterialPageRoute(builder: (context) => HomeScreen(user: user))
-        );
+        // Check if user is admin and navigate accordingly
+        if (user.isAdmin) {
+          // Navigate to Admin Screen
+          Navigator.pushReplacementNamed(context, '/admin_all_food_screen');
+        } else {
+          // Navigate to User Home Screen
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => HomeScreen(user: user))
+          );
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Google Sign-In was cancelled or failed')),

@@ -1,18 +1,26 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:foodapp/screens/admin/admin_all_food_screen.dart';
+import 'package:foodapp/screens/admin/all_food_screen.dart';
+import 'package:foodapp/screens/admin/edit_food_screen.dart';
+import 'package:foodapp/screens/admin/food_adding_screen.dart';
+import 'package:foodapp/screens/admin/food_details_screen.dart';
 import 'package:foodapp/screens/all_food_screen.dart';
-import 'package:foodapp/screens/food_adding_screen.dart';
-import 'package:foodapp/screens/froget_password_screen.dart';
-import 'package:foodapp/screens/loading_screen.dart';
-import 'package:foodapp/screens/sign_in_screen.dart';
-import 'package:foodapp/screens/sign_up_screen.dart';
-
-
+import 'package:foodapp/screens/auth/froget_password_screen.dart';
+import 'package:foodapp/screens/auth/loading_screen.dart';
+import 'package:foodapp/screens/auth/sign_in_screen.dart';
+import 'package:foodapp/screens/auth/sign_up_screen.dart';
+import 'package:foodapp/screens/auth/unauthorized_screen.dart';
+import 'package:foodapp/services/auth_service.dart';
+import 'package:foodapp/widgets/admin_auth_check.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter binding is initialized
   await Firebase.initializeApp(); // Initialize Firebase
+
+  // Create admin user if it doesn't exist
+  final AuthService authService = AuthService();
+  await authService.ensureAdminExists();
+
   runApp(const MyApp());
 }
 
@@ -24,16 +32,70 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Food Order App',
       debugShowCheckedModeBanner: false,
-      initialRoute: '/all_food_item_screen', // Set initial route to HomeScreen
+      initialRoute: '/loading_page', // Set initial route
       routes: {
-        '/loading_page':(context)=>LoadingScreen(),
-        '/sign_in_page':(context)=>SignInScreen(),
-        '/sign_up_page':(context)=>SignUpScreen(),
-        '/froget_password':(context)=>ForgotPasswordScreen(),
-        '/food_add_screen':(context)=>AddFoodScreen(),
-        '/all_food_item_screen':(context)=>AllFoodsScreen(),
-        '/admin_all_food_screen':(context)=>AdminAllFoodsScreen(),
+        '/loading_page': (context) => LoadingScreen(),
+        '/sign_in_page': (context) => SignInScreen(),
+        '/sign_up_page': (context) => SignUpScreen(),
+        '/froget_password': (context) => ForgotPasswordScreen(),
+        '/all_food_item_screen': (context) => AllFoodsScreen(),
+
+        // Protected admin routes
+        '/admin_all_food_screen':
+            (context) => AdminAuthCheck(
+              adminWidget: AdminAllFoodsScreen(),
+              userWidget: UnauthorizedScreen(),
+            ),
+
+        '/admin_food_adding_screen':
+            (context) => AdminAuthCheck(
+              adminWidget: AddFoodScreen(),
+              userWidget: UnauthorizedScreen(),
+            ),
       },
     );
   }
 }
+
+
+
+
+
+
+// import 'package:firebase_core/firebase_core.dart';
+// import 'package:flutter/material.dart';
+// import 'package:foodapp/screens/admin/all_food_screen.dart';
+// import 'package:foodapp/screens/all_food_screen.dart';
+// import 'package:foodapp/screens/admin/food_adding_screen.dart';
+// import 'package:foodapp/screens/auth/froget_password_screen.dart';
+// import 'package:foodapp/screens/auth/loading_screen.dart';
+// import 'package:foodapp/screens/auth/sign_in_screen.dart';
+// import 'package:foodapp/screens/auth/sign_up_screen.dart';
+
+// void main() async {
+//   WidgetsFlutterBinding.ensureInitialized(); // Ensure Flutter binding is initialized
+//   await Firebase.initializeApp(); // Initialize Firebase
+//   runApp(const MyApp());
+// }
+
+// class MyApp extends StatelessWidget {
+//   const MyApp({super.key});
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return MaterialApp(
+//       title: 'Food Order App',
+//       debugShowCheckedModeBanner: false,
+//       initialRoute: '/all_food_item_screen', // Set initial route to HomeScreen
+//       routes: {
+//         '/loading_page':(context)=>LoadingScreen(),
+//         '/sign_in_page':(context)=>SignInScreen(),
+//         '/sign_up_page':(context)=>SignUpScreen(),
+//         '/froget_password':(context)=>ForgotPasswordScreen(),
+//         '/food_add_screen':(context)=>AddFoodScreen(),
+//         '/all_food_item_screen':(context)=>AllFoodsScreen(),
+//         '/admin_all_food_screen':(context)=>AdminAllFoodsScreen(),
+//       },
+//     );
+//   }
+// }

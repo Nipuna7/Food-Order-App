@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/user_model.dart';
-import 'package:foodapp/screens/edit_profile_screen.dart';
+import 'package:foodapp/screens/user/edit_profile_screen.dart';
 import 'package:foodapp/services/auth_service.dart';
-import 'package:foodapp/screens/sign_in_screen.dart';
+import 'package:foodapp/screens/auth/sign_in_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final UserModel user;

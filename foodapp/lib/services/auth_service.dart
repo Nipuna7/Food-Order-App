@@ -7,6 +7,105 @@ import '../models/user_model.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  
+  // Admin credentials
+  final String _adminEmail = "admin@gmail.com";
+  final String _adminPassword = "admin1234";
+
+  // Check if a user is an admin
+  Future<bool> isUserAdmin(String uid) async {
+    try {
+      DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
+      if (doc.exists) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        return data['isAdmin'] ?? false;
+      }
+      return false;
+    } catch (e) {
+      debugPrint("Error checking admin status: ${e.toString()}");
+      return false;
+    }
+  }
+
+  // Create admin user if it doesn't exist
+  Future<void> ensureAdminExists() async {
+    try {
+      // Check if admin already exists by email
+      final QuerySnapshot result = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: _adminEmail)
+          .limit(1)
+          .get();
+
+      if (result.docs.isEmpty) {
+        debugPrint("Admin user does not exist. Creating...");
+        try {
+          // Create admin user in Firebase Auth
+          UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+            email: _adminEmail,
+            password: _adminPassword,
+          );
+
+          User? user = userCredential.user;
+          if (user != null) {
+            // Create admin in Firestore
+            UserModel adminUser = UserModel(
+              uid: user.uid,
+              email: _adminEmail,
+              name: "Admin User",
+              contactNumber: "",
+              profilePicture: "",
+              isAdmin: true,
+            );
+
+            await _firestore.collection('users').doc(user.uid).set(adminUser.toMap());
+            debugPrint("Admin user created successfully");
+          }
+        } on FirebaseAuthException catch (e) {
+          if (e.code == 'email-already-in-use') {
+            debugPrint("Admin email exists in Auth but not in Firestore. Fetching user...");
+            // Admin exists in Auth but not in Firestore
+            try {
+              UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+                email: _adminEmail,
+                password: _adminPassword,
+              );
+              
+              User? user = userCredential.user;
+              if (user != null) {
+                // Create admin in Firestore
+                UserModel adminUser = UserModel(
+                  uid: user.uid,
+                  email: _adminEmail,
+                  name: "Admin User",
+                  contactNumber: "",
+                  profilePicture: "",
+                  isAdmin: true,
+                );
+
+                await _firestore.collection('users').doc(user.uid).set(adminUser.toMap());
+                debugPrint("Admin user added to Firestore");
+                
+                // Sign out after creating admin
+                await _auth.signOut();
+              }
+            } catch (signInError) {
+              debugPrint("Error signing in as admin: ${signInError.toString()}");
+            }
+          } else {
+            debugPrint("Error creating admin user: ${e.code} - ${e.message}");
+          }
+        }
+      } else {
+        // Admin already exists, ensure isAdmin flag is true
+        String adminUid = result.docs.first.id;
+        await _firestore.collection('users').doc(adminUid).update({'isAdmin': true});
+        debugPrint("Admin user already exists");
+      }
+    } catch (e) {
+      debugPrint("Error ensuring admin exists: ${e.toString()}");
+    }
+  }
 
   // Update user details
   Future<bool> updateUserDetails(
@@ -60,12 +159,14 @@ class AuthService {
       if (user != null) {
         debugPrint("User created in Firebase Auth: ${user.uid}");
 
+        // Regular users are never admins when they register
         UserModel userModel = UserModel(
           uid: user.uid,
           email: email,
           name: name,
           contactNumber: contactNumber,
           profilePicture: profilePicture,
+          isAdmin: false, // Regular users are never admins
         );
 
         debugPrint("Saving user to Firestore...");
@@ -125,64 +226,66 @@ class AuthService {
   }
 
   // Google Sign-In
-Future<UserModel?> signInWithGoogle() async {
-  try {
-    // Begin the sign-in process
-    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-    
-    // If user cancels the sign-in process
-    if (googleUser == null) {
-      debugPrint("Google Sign-In cancelled by user");
-      return null;
-    }
-
-    // Obtain the auth details from the sign-in attempt
-    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    
-    // Create a new credential
-    final credential = GoogleAuthProvider.credential(
-      accessToken: googleAuth.accessToken,
-      idToken: googleAuth.idToken,
-    );
-
-    // Sign in to Firebase with the Google credential
-    UserCredential result = await _auth.signInWithCredential(credential);
-    User? user = result.user;
-
-    if (user != null) {
-      // Check if the user already exists in Firestore
-      DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
-
-      // If this is a new user, save their information
-      if (!doc.exists) {
-        UserModel userModel = UserModel(
-          uid: user.uid,
-          email: user.email ?? '',
-          name: user.displayName ?? '',
-          contactNumber: '',  // Google doesn't provide contact number
-          profilePicture: user.photoURL ?? '',
-        );
-        
-        await _firestore.collection('users').doc(user.uid).set(userModel.toMap());
-        debugPrint("New Google user created in Firestore: ${user.uid}");
-        return userModel;
+  Future<UserModel?> signInWithGoogle() async {
+    try {
+      // Begin the sign-in process
+      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      
+      // If user cancels the sign-in process
+      if (googleUser == null) {
+        debugPrint("Google Sign-In cancelled by user");
+        return null;
       }
 
-      // If the user already exists, return their data
-      debugPrint("Existing Google user found in Firestore: ${user.uid}");
-      return UserModel.fromMap(doc.data() as Map<String, dynamic>);
-    } else {
-      debugPrint("Failed to get user data from Google Sign-In");
-      return null;
+      // Obtain the auth details from the sign-in attempt
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      UserCredential result = await _auth.signInWithCredential(credential);
+      User? user = result.user;
+
+      if (user != null) {
+        // Check if the user already exists in Firestore
+        DocumentSnapshot doc = await _firestore.collection('users').doc(user.uid).get();
+
+        // If this is a new user, save their information
+        if (!doc.exists) {
+          // Google users are never admins by default
+          UserModel userModel = UserModel(
+            uid: user.uid,
+            email: user.email ?? '',
+            name: user.displayName ?? '',
+            contactNumber: '',  // Google doesn't provide contact number
+            profilePicture: user.photoURL ?? '',
+            isAdmin: false, // Google users are never admins by default
+          );
+          
+          await _firestore.collection('users').doc(user.uid).set(userModel.toMap());
+          debugPrint("New Google user created in Firestore: ${user.uid}");
+          return userModel;
+        }
+
+        // If the user already exists, return their data
+        debugPrint("Existing Google user found in Firestore: ${user.uid}");
+        return UserModel.fromMap(doc.data() as Map<String, dynamic>);
+      } else {
+        debugPrint("Failed to get user data from Google Sign-In");
+        return null;
+      }
+    } on FirebaseAuthException catch (e) {
+      debugPrint("Firebase Auth Error during Google Sign-In: ${e.code} - ${e.message}");
+      throw Exception(e.message ?? 'Google authentication failed');
+    } on Exception catch (e) {
+      debugPrint("Google Sign-In Error: ${e.toString()}");
+      throw Exception('Failed to sign in with Google: ${e.toString()}');
     }
-  } on FirebaseAuthException catch (e) {
-    debugPrint("Firebase Auth Error during Google Sign-In: ${e.code} - ${e.message}");
-    throw Exception(e.message ?? 'Google authentication failed');
-  } on Exception catch (e) {
-    debugPrint("Google Sign-In Error: ${e.toString()}");
-    throw Exception('Failed to sign in with Google: ${e.toString()}');
   }
-}
 
   // Password Reset
   Future<void> resetPassword(String email) async {

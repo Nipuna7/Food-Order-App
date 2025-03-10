@@ -19,6 +19,11 @@ class _LoadingPageState extends State<LoadingScreen> {
         _opacity = 1.0; // Change opacity to 1.0 (fully visible)
       });
     });
+
+    // Navigate to SignInScreen after animation completes (2.5 seconds delay)
+    Future.delayed(Duration(seconds: 2, milliseconds: 500), () {
+      Navigator.pushReplacementNamed(context, '/sign_in_page');
+    });
   }
 
   @override
@@ -29,8 +34,8 @@ class _LoadingPageState extends State<LoadingScreen> {
           opacity: _opacity, // Use the animated opacity value
           duration: Duration(seconds: 2), // Animation duration
           child: SizedBox(
-            height: 350, // Set height to 400px
-            width: 250, // Set width to 300px
+            height: 350, // Set height
+            width: 250, // Set width
             child: Image.asset(
               'assets/image/burger.jpg', // Replace with your image path
               fit: BoxFit.cover, // Ensure the image covers the container

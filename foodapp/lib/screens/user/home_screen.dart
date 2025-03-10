@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/user_model.dart';
-import 'package:foodapp/screens/profile_screen.dart'; // Import ProfileScreen
+import 'package:foodapp/screens/user/profile_screen.dart'; // Import ProfileScreen
 
 class HomeScreen extends StatelessWidget {
   final UserModel user;
