@@ -198,7 +198,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return ElevatedButton(
       onPressed: _logout,
       style: ElevatedButton.styleFrom(
-        backgroundColor: Color(0xFFFF0000).withOpacity(1),
+        backgroundColor: Color(0xFFFF6B01).withOpacity(1),
         padding: EdgeInsets.symmetric(vertical: 16),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),

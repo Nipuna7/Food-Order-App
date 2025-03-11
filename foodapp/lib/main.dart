@@ -12,6 +12,7 @@ import 'package:foodapp/screens/auth/loading_screen.dart';
 import 'package:foodapp/screens/auth/sign_in_screen.dart';
 import 'package:foodapp/screens/auth/sign_up_screen.dart';
 import 'package:foodapp/screens/auth/unauthorized_screen.dart';
+import 'package:foodapp/screens/user/cart_screen.dart';
 import 'package:foodapp/screens/user/home_screen.dart';
 import 'package:foodapp/screens/user/profile_screen.dart';
 import 'package:foodapp/services/auth_service.dart';
@@ -45,6 +46,7 @@ class MyApp extends StatelessWidget {
         '/froget_password': (context) => ForgotPasswordScreen(),
         '/all_food_item_screen': (context) => AllFoodsScreen(),
         '/profile_screen': (context) => ProfileScreen(),
+        
         
 
         

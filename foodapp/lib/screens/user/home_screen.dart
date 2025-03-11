@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:foodapp/models/user_model.dart';
+import 'package:foodapp/screens/user/cart_screen.dart';
 import 'package:foodapp/services/auth_service.dart';
 import 'package:foodapp/widgets/user_navbar.dart';
-
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -11,6 +12,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final AuthService _authService = AuthService();
+  UserModel? _currentUser;
   int _currentIndex = 0;
   String _greeting = "";
   String _username = "";
@@ -26,6 +29,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final user = await authService.getCurrentUser();
     if (user != null) {
       setState(() {
+        _currentUser = user;
         _username = user.name;
         _greeting = _getGreeting();
       });
@@ -67,15 +71,10 @@ class _HomeScreenState extends State<HomeScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.shopping_cart, color: Colors.black), // Cart icon
-            onPressed: () {
-              // Add navigation to cart screen or functionality
-              print("Cart icon pressed");
-            },
+            onPressed: _navigateToCart,
           ),
         ],
       ),
-
-
       body: IndexedStack(
         index: _currentIndex,
       ),
@@ -84,5 +83,30 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: _onTabTapped,
       ),
     );
+  }
+
+  Future<void> _navigateToCart() async {
+    if (_currentUser != null) {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CartScreen(userId: _currentUser!.uid),
+        ),
+      );
+      
+      if (result != null && result is UserModel) {
+        setState(() {
+          _currentUser = result;
+        });
+      }
+    } else {
+      // Handle the case when user is not loaded yet
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Unable to access cart. Please try again.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 }

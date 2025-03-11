@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/food_model.dart';
 import 'package:foodapp/screens/food_detail_screen.dart';
+import 'package:foodapp/screens/user/cart_screen.dart';
 import 'package:foodapp/services/food_service.dart';
+import 'package:foodapp/services/cart_service.dart';
 import 'dart:convert';
+import 'package:foodapp/services/auth_service.dart';
 
 class AllFoodsScreen extends StatefulWidget {
   const AllFoodsScreen({super.key});
@@ -13,18 +16,29 @@ class AllFoodsScreen extends StatefulWidget {
 
 class _AllFoodsScreenState extends State<AllFoodsScreen> {
   final FoodService _foodService = FoodService();
+  final CartService _cartService = CartService();
+  final AuthService _authService = AuthService();
   List<FoodModel> _foods = [];
   List<FoodModel> _filteredFoods = [];
   bool _isLoading = true;
   String? _errorMessage;
   bool _isSearching = false;
   final TextEditingController _searchController = TextEditingController();
+  String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
     _loadFoods();
     _searchController.addListener(_onSearchChanged);
+    _getCurrentUser();
+  }
+
+  Future<void> _getCurrentUser() async {
+    final currentUser = await _authService.getCurrentUser();
+    setState(() {
+      _currentUserId = currentUser?.uid;
+    });
   }
 
   @override
@@ -86,6 +100,77 @@ class _AllFoodsScreenState extends State<AllFoodsScreen> {
     }
   }
 
+  Future<void> _addToCart(FoodModel food) async {
+    if (_currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You need to be logged in to add items to cart'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+    
+    try {
+      bool success = await _cartService.addToCart(_currentUserId!, food);
+      
+      if (success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('${food.name} added to cart'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+            action: SnackBarAction(
+              label: 'VIEW CART',
+              onPressed: _goToCart,
+              textColor: Colors.white,
+            ),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to add to cart'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error adding to cart: ${e.toString()}'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  void _goToCart() {
+    if (_currentUserId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You need to be logged in to view your cart'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
+    }
+    
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CartScreen(userId: _currentUserId!),
+      ),
+    ).then((_) {
+      // Refresh when returning from cart
+      _loadFoods();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -130,6 +215,13 @@ class _AllFoodsScreenState extends State<AllFoodsScreen> {
                     _searchController.clear();
                   }
                 : _toggleSearch,
+          ),
+          IconButton(
+            icon: Icon(
+              Icons.shopping_cart,
+              color: Colors.black,
+            ),
+            onPressed: _goToCart,
           ),
         ],
       ),
@@ -300,9 +392,12 @@ class _AllFoodsScreenState extends State<AllFoodsScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => FoodDetailScreen(foodId: food.id),
+            builder: (_) => FoodDetailScreen(foodId: food.id, userId: _currentUserId),
           ),
-        );
+        ).then((_) {
+          // Refresh when returning from food detail
+          _loadFoods();
+        });
       },
       child: Container(
         decoration: BoxDecoration(
@@ -395,15 +490,7 @@ class _AllFoodsScreenState extends State<AllFoodsScreen> {
                             color: Colors.white,
                             size: 18,
                           ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${food.name} added to cart'),
-                                backgroundColor: Colors.green,
-                                duration: Duration(seconds: 1),
-                              ),
-                            );
-                          },
+                          onPressed: () => _addToCart(food),
                         ),
                       ),
                     ],
