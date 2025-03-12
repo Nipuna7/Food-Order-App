@@ -82,7 +82,13 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Food Order App'),
+        title: Text(
+          '${_getGreeting()}',
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         backgroundColor: const Color(0x00ffffff),
         automaticallyImplyLeading: false,
       ),
@@ -110,15 +116,6 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Welcome section with dynamic greeting
-              Text(
-                '${_getGreeting()}',
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
               const Text(
                 'Manage your restaurant orders and inventory',
                 style: TextStyle(

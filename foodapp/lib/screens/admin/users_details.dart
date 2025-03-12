@@ -15,11 +15,42 @@ class _UsersListScreenState extends State<UsersListScreen> {
   List<UserModel> _users = [];
   bool _isLoading = true;
   String? _errorMessage;
+  bool _isAdmin = false;  // Track admin status
 
   @override
   void initState() {
     super.initState();
     _loadUsers();
+    _checkIfAdmin();
+  }
+
+  // Check if current user is admin
+  Future<void> _checkIfAdmin() async {
+    try {
+      UserModel? currentUser = await _authService.getCurrentUser();
+      if (currentUser != null) {
+        setState(() {
+          _isAdmin = currentUser.isAdmin;
+        });
+      }
+    } catch (e) {
+      debugPrint("Error checking admin status: ${e.toString()}");
+    }
+  }
+
+  // Handle logout
+  Future<void> _handleLogout() async {
+    try {
+      await _authService.signOut();
+      // Navigate to login screen after logout
+      if (mounted) {
+        Navigator.of(context).pushReplacementNamed('/sign_in_page');
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Logout failed: ${e.toString()}')),
+      );
+    }
   }
 
   Future<void> _loadUsers() async {
@@ -44,29 +75,53 @@ class _UsersListScreenState extends State<UsersListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: Text(
-          'Users List',
-          style: TextStyle(
-            color: Colors.black,
-            fontWeight: FontWeight.bold,
-            fontSize: 18,
-          ),
-        ),
+    return PopScope(
+      // Handle back button press
+      canPop: false,
+      onPopInvoked: (didPop) {
+        if (!didPop) {
+          Navigator.of(context).pushReplacementNamed('/admin_home');
+        }
+      },
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: SafeArea(
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: Color(0xFFFF6B01)))
-            : _errorMessage != null
-                ? _buildErrorView()
-                : _users.isEmpty
-                    ? _buildEmptyView()
-                    : _buildUsersList(),
+        appBar: AppBar(
+          title: Text(
+            'Users List',
+            style: TextStyle(
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.black),
+            onPressed: () {
+              Navigator.of(context).pushReplacementNamed('/admin_home');
+            },
+          ),
+          actions: [
+            // Add logout button if the user is admin
+            if (_isAdmin)
+              IconButton(
+                icon: Icon(Icons.logout, color: Color(0xFFFF6B01)),
+                onPressed: _handleLogout,
+                tooltip: 'Logout',
+              ),
+          ],
+        ),
+        body: SafeArea(
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator(color: Color(0xFFFF6B01)))
+              : _errorMessage != null
+                  ? _buildErrorView()
+                  : _users.isEmpty
+                      ? _buildEmptyView()
+                      : _buildUsersList(),
+        ),
       ),
     );
   }

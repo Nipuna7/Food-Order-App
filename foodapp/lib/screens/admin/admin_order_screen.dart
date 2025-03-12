@@ -181,197 +181,205 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
     }
   }
 
+  // Handle back navigation
+  Future<bool> _onWillPop() async {
+    Navigator.of(context).pushReplacementNamed('/admin_home');
+    return false; // Prevents default back button behavior
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Order Management'),
-        bottom: TabBar(
-          controller: _tabController,
-          isScrollable: true,
-          tabs: _statusFilters.map((status) => Tab(text: status)).toList(),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('Order Management'),
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back),
+            onPressed: () {
+              Navigator.of(context).pushReplacementNamed('/admin_home');
+            },
+          ),
+          bottom: TabBar(
+            controller: _tabController,
+            isScrollable: true,
+            tabs: _statusFilters.map((status) => Tab(text: status)).toList(),
+          ),
         ),
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(child: Text(_errorMessage!))
-              : _orders.isEmpty
-                  ? Center(child: Text('No orders found'))
-                  : ListView.builder(
-                      itemCount: _orders.length,
-                      itemBuilder: (context, index) {
-                        final order = _orders[index];
-                        final user = _userCache[order.userId];
-                        
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          child: ExpansionTile(
-                            leading: CircleAvatar(
-                              backgroundColor: _getStatusColor(order.status),
-                              child: Text(
-                                order.status.substring(0, 1).toUpperCase(),
-                                style: TextStyle(color: Colors.white),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : _errorMessage != null
+                ? Center(child: Text(_errorMessage!))
+                : _orders.isEmpty
+                    ? Center(child: Text('No orders found'))
+                    : ListView.builder(
+                        itemCount: _orders.length,
+                        itemBuilder: (context, index) {
+                          final order = _orders[index];
+                          final user = _userCache[order.userId];
+                          
+                          return Card(
+                            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            child: ExpansionTile(
+                              leading: CircleAvatar(
+                                backgroundColor: _getStatusColor(order.status),
+                                child: Text(
+                                  order.status.substring(0, 1).toUpperCase(),
+                                  style: TextStyle(color: Colors.white),
+                                ),
                               ),
-                            ),
-                            title: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Order #${order.id.substring(0, 8)}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                              title: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      'Order #${order.id.substring(0, 8)}',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                // Add a quick cancel button for non-cancelled orders
-                                // if (order.status != 'cancelled')
-                                //   IconButton(
-                                //     icon: Icon(Icons.cancel, color: Colors.red),
-                                //     tooltip: 'Cancel Order',
-                                //     onPressed: () => _showCancelConfirmationDialog(order.id),
-                                //   ),
-                              ],
-                            ),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                                ],
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Customer: ${user?.name ?? 'Unknown'} (${user?.contactNumber ?? 'No phone'})',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    _getOrderSummary(order),
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  Text(
+                                    'Total: \$${order.totalAmount.toStringAsFixed(2)} • ${DateFormat('MMM dd, yyyy • hh:mm a').format(order.orderDate)}',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                ],
+                              ),
                               children: [
-                                Text(
-                                  'Customer: ${user?.name ?? 'Unknown'} (${user?.contactNumber ?? 'No phone'})',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                Text(
-                                  _getOrderSummary(order),
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                                Text(
-                                  'Total: \$${order.totalAmount.toStringAsFixed(2)} • ${DateFormat('MMM dd, yyyy • hh:mm a').format(order.orderDate)}',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                              ],
-                            ),
-                            children: [
-                              Padding(
-                                padding: EdgeInsets.all(16),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    if (order.deliveryAddress != null)
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 8.0),
-                                        child: Row(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Icon(Icons.location_on, size: 16),
-                                            SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text('${order.deliveryAddress}'),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    Divider(),
-                                    Text(
-                                      'Items:',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
-                                    ),
-                                    ...order.items.map((item) => Padding(
-                                          padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                Padding(
+                                  padding: EdgeInsets.all(16),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      if (order.deliveryAddress != null)
+                                        Padding(
+                                          padding: const EdgeInsets.only(bottom: 8.0),
                                           child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            crossAxisAlignment: CrossAxisAlignment.start,
                                             children: [
-                                              Text('${item.quantity}x ${item.food.name}'),
-                                              Text('\$${(item.food.price * item.quantity).toStringAsFixed(2)}'),
+                                              Icon(Icons.location_on, size: 16),
+                                              SizedBox(width: 8),
+                                              Expanded(
+                                                child: Text('${order.deliveryAddress}'),
+                                              ),
                                             ],
                                           ),
-                                        )),
-                                    Divider(),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Total Amount:',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
                                         ),
-                                        Text(
-                                          '\$${order.totalAmount.toStringAsFixed(2)}',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 16),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                      children: [
-                                        Text(
-                                          'Update Status:',
-                                          style: TextStyle(fontWeight: FontWeight.bold),
-                                        ),
-                                        // Add a more visible Cancel button
-                                        if (order.status != 'cancelled')
-                                          ElevatedButton.icon(
-                                            icon: Icon(Icons.cancel),
-                                            label: Text('Cancel Order'),
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.red,
-                                              foregroundColor: Colors.white,
-                                            ),
-                                            onPressed: () => _showCancelConfirmationDialog(order.id),
-                                          ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 8),
-                                    SizedBox(height: 8),
-                                    SizedBox(height: 8),
-                                    Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Ensures even spacing
-                                      children: [
-                                        Flexible(child: _buildStatusButton(order.id, 'pending', order.status)),
-                                        Flexible(child: _buildStatusButton(order.id, 'process', order.status)),
-                                        Flexible(child: _buildStatusButton(order.id, 'delivered', order.status)),
-                                      ],
-                                    ),
-                                    SizedBox(height: 16),
-                                    ElevatedButton.icon(
-                                      icon: Icon(Icons.info_outline),
-                                      label: Text('View Full Details'),
-                                      onPressed: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => AdminOrderDetailScreen(orderId: order.id),
-                                          ),
-                                        ).then((_) => _fetchOrders()); // Refresh after returning
-                                      },
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: Colors.blue,
-                                        foregroundColor: Colors.white,
-                                        minimumSize: Size(double.infinity, 36),
+                                      Divider(),
+                                      Text(
+                                        'Items:',
+                                        style: TextStyle(fontWeight: FontWeight.bold),
                                       ),
-                                    ),
-                                  ],
+                                      ...order.items.map((item) => Padding(
+                                            padding: const EdgeInsets.symmetric(vertical: 4.0),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text('${item.quantity}x ${item.food.name}'),
+                                                Text('\$${(item.food.price * item.quantity).toStringAsFixed(2)}'),
+                                              ],
+                                            ),
+                                          )),
+                                      Divider(),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Total Amount:',
+                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                          Text(
+                                            '\$${order.totalAmount.toStringAsFixed(2)}',
+                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 16),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Update Status:',
+                                            style: TextStyle(fontWeight: FontWeight.bold),
+                                          ),
+                                          // Add a more visible Cancel button
+                                          if (order.status != 'cancelled')
+                                            ElevatedButton.icon(
+                                              icon: Icon(Icons.cancel),
+                                              label: Text('Cancel Order'),
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: Colors.red,
+                                                foregroundColor: Colors.white,
+                                              ),
+                                              onPressed: () => _showCancelConfirmationDialog(order.id),
+                                            ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 8),
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Ensures even spacing
+                                        children: [
+                                          Flexible(child: _buildStatusButton(order.id, 'pending', order.status)),
+                                          Flexible(child: _buildStatusButton(order.id, 'processing', order.status)),
+                                          Flexible(child: _buildStatusButton(order.id, 'delivered', order.status)),
+                                        ],
+                                      ),
+                                      SizedBox(height: 16),
+                                      ElevatedButton.icon(
+                                        icon: Icon(Icons.info_outline),
+                                        label: Text('View Full Details'),
+                                        onPressed: () {
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => AdminOrderDetailScreen(orderId: order.id),
+                                            ),
+                                          ).then((_) => _fetchOrders()); // Refresh after returning
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                          foregroundColor: Colors.white,
+                                          minimumSize: Size(double.infinity, 36),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _fetchOrders,
-        tooltip: 'Refresh Orders',
-        child: Icon(Icons.refresh),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: _fetchOrders,
+          tooltip: 'Refresh Orders',
+          child: Icon(Icons.refresh),
+        ),
       ),
     );
   }
 
   Widget _buildStatusButton(String orderId, String status, String currentStatus) {
-    bool isCurrentStatus = status == currentStatus;
+    // Fix for the "process" status to match the expected "processing" status
+    String statusValue = status == 'process' ? 'processing' : status;
+    bool isCurrentStatus = statusValue == currentStatus;
     
     return ElevatedButton(
-      onPressed: isCurrentStatus ? null : () => _updateOrderStatus(orderId, status),
+      onPressed: isCurrentStatus ? null : () => _updateOrderStatus(orderId, statusValue),
       style: ElevatedButton.styleFrom(
-        backgroundColor: isCurrentStatus ? _getStatusColor(status) : Colors.grey.shade200,
+        backgroundColor: isCurrentStatus ? _getStatusColor(statusValue) : Colors.grey.shade200,
         foregroundColor: isCurrentStatus ? Colors.white : Colors.black,
       ),
       child: Text(StringExtension(status).capitalize()),

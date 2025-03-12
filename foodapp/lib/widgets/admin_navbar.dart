@@ -96,7 +96,7 @@ class AdminNavbar extends StatelessWidget {
                 currentIndex == 1,
               ),
               _buildBottomNavigationBarItem(
-                Icons.assignment_rounded,
+                Icons.assignment_outlined,
                 Icons.assignment,
                 'Orders',
                 currentIndex == 2,

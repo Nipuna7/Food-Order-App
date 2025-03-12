@@ -15,8 +15,11 @@ class AdminAllFoodsScreen extends StatefulWidget {
 class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
   final FoodService _foodService = FoodService();
   List<FoodModel> _foods = [];
+  List<FoodModel> _filteredFoods = [];
   bool _isLoading = true;
   String? _errorMessage;
+  bool _isSearching = false;
+  TextEditingController _searchController = TextEditingController();
 
   FoodModel? _food;
   bool _isDeleting = false;
@@ -25,6 +28,29 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
   void initState() {
     super.initState();
     _loadFoods();
+    _searchController.addListener(_filterFoods);
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_filterFoods);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _filterFoods() {
+    final query = _searchController.text.toLowerCase();
+    setState(() {
+      if (query.isEmpty) {
+        _filteredFoods = List.from(_foods);
+      } else {
+        _filteredFoods = _foods
+            .where((food) =>
+                food.name.toLowerCase().contains(query) ||
+                food.description.toLowerCase().contains(query))
+            .toList();
+      }
+    });
   }
 
   Future<void> _loadFoods() async {
@@ -37,6 +63,7 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
       List<FoodModel> foods = await _foodService.getAllFoods();
       setState(() {
         _foods = foods;
+        _filteredFoods = List.from(foods);
         _isLoading = false;
       });
     } catch (e) {
@@ -47,11 +74,85 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
     }
   }
 
+  void _toggleSearch() {
+    setState(() {
+      _isSearching = !_isSearching;
+      if (!_isSearching) {
+        _searchController.clear();
+      } else {
+        // Focus on search field when opened
+        FocusScope.of(context).requestFocus(FocusNode());
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
+    return WillPopScope(
+      onWillPop: () async {
+        if (_isSearching) {
+          setState(() {
+            _isSearching = false;
+            _searchController.clear();
+          });
+          return false;
+        }
+        Navigator.pushReplacementNamed(context, '/admin_home');
+        return false; // Prevent default back behavior
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: _buildAppBar(),
+        body: SafeArea(
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator(color: Color(0xFFFF6B01)))
+              : _errorMessage != null
+                  ? _buildErrorView()
+                  : _filteredFoods.isEmpty
+                      ? _buildEmptyView()
+                      : _buildFoodsGrid(),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.pushNamed(context, '/admin_food_adding_screen');
+          },
+          backgroundColor: Color(0xFFFF6B01),
+          child: Icon(Icons.add, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    if (_isSearching) {
+      return AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: TextField(
+          controller: _searchController,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: 'Search foods...',
+            border: InputBorder.none,
+            hintStyle: TextStyle(color: Colors.grey),
+          ),
+          style: TextStyle(color: Colors.black, fontSize: 16),
+        ),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: _toggleSearch,
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.clear, color: Colors.black),
+            onPressed: () {
+              _searchController.clear();
+            },
+          ),
+        ],
+      );
+    } else {
+      return AppBar(
         title: Text(
           'Food Menu',
           style: TextStyle(
@@ -63,32 +164,20 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () {
+            Navigator.pushReplacementNamed(context, '/admin_home');
+          },
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.search, color: Colors.black),
-            onPressed: () {
-              // TODO: Implement search functionality
-            },
+            onPressed: _toggleSearch,
           ),
         ],
-      ),
-      body: SafeArea(
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: Color(0xFFFF6B01)))
-            : _errorMessage != null
-                ? _buildErrorView()
-                : _foods.isEmpty
-                    ? _buildEmptyView()
-                    : _buildFoodsGrid(),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.pushNamed(context, '/admin_food_adding_screen');
-        },
-        backgroundColor: Color(0xFFFF6B01),
-        child: Icon(Icons.add, color: Colors.white),
-      ),
-    );
+      );
+    }
   }
 
   Widget _buildErrorView() {
@@ -159,7 +248,9 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
             ),
             SizedBox(height: 16),
             Text(
-              'No Food Items',
+              _searchController.text.isNotEmpty
+                  ? 'No Results Found'
+                  : 'No Food Items',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -168,13 +259,37 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
             ),
             SizedBox(height: 8),
             Text(
-              'There are no food items available at the moment.',
+              _searchController.text.isNotEmpty
+                  ? 'No food items match your search criteria.'
+                  : 'There are no food items available at the moment.',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade600,
               ),
             ),
+            if (_searchController.text.isNotEmpty) ...[
+              SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () {
+                  _searchController.clear();
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color(0xFFFF6B01),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  'CLEAR SEARCH',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),
@@ -194,9 +309,9 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
             crossAxisSpacing: 16,
             mainAxisSpacing: 16,
           ),
-          itemCount: _foods.length,
+          itemCount: _filteredFoods.length,
           itemBuilder: (context, index) {
-            final food = _foods[index];
+            final food = _filteredFoods[index];
             return _buildFoodCard(food);
           },
         ),
@@ -214,8 +329,9 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
       final success = await _foodService.deleteFood(_food!.id);
       if (success) {
         setState(() {
-          // Remove the deleted food from the list
+          // Remove the deleted food from both lists
           _foods.removeWhere((item) => item.id == _food!.id);
+          _filteredFoods.removeWhere((item) => item.id == _food!.id);
         });
         
         if (mounted) {
