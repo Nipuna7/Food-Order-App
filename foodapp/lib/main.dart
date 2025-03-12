@@ -2,10 +2,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/user_model.dart';
 import 'package:foodapp/screens/admin/admin_home_screen.dart';
+import 'package:foodapp/screens/admin/admin_order_dashboard_screen.dart';
+import 'package:foodapp/screens/admin/admin_order_screen.dart';
 import 'package:foodapp/screens/admin/all_food_screen.dart';
 import 'package:foodapp/screens/admin/edit_food_screen.dart';
 import 'package:foodapp/screens/admin/food_adding_screen.dart';
 import 'package:foodapp/screens/admin/food_details_screen.dart';
+import 'package:foodapp/screens/admin/users_details.dart';
 import 'package:foodapp/screens/all_food_screen.dart';
 import 'package:foodapp/screens/auth/froget_password_screen.dart';
 import 'package:foodapp/screens/auth/loading_screen.dart';
@@ -14,6 +17,8 @@ import 'package:foodapp/screens/auth/sign_up_screen.dart';
 import 'package:foodapp/screens/auth/unauthorized_screen.dart';
 import 'package:foodapp/screens/user/cart_screen.dart';
 import 'package:foodapp/screens/user/home_screen.dart';
+import 'package:foodapp/screens/user/order_detail_screen.dart';
+import 'package:foodapp/screens/user/order_screen.dart';
 import 'package:foodapp/screens/user/profile_screen.dart';
 import 'package:foodapp/services/auth_service.dart';
 import 'package:foodapp/widgets/admin_auth_check.dart';
@@ -46,10 +51,11 @@ class MyApp extends StatelessWidget {
         '/froget_password': (context) => ForgotPasswordScreen(),
         '/all_food_item_screen': (context) => AllFoodsScreen(),
         '/profile_screen': (context) => ProfileScreen(),
-        
+        '/all_order_screen': (context) => OrderScreen(),
         
 
-        
+
+
 
         // Protected admin routes
         '/admin_all_food_screen':
@@ -69,6 +75,25 @@ class MyApp extends StatelessWidget {
               adminWidget: AdminHomeScreen(),
               userWidget: UnauthorizedScreen(),
             ),
+        '/user_detail':
+            (context) => AdminAuthCheck(
+              adminWidget: UsersListScreen(),
+              userWidget: UnauthorizedScreen()
+            ),
+        '/admin_order':
+            (context) => AdminAuthCheck(
+              adminWidget: AdminOrderScreen(),
+              userWidget: UnauthorizedScreen()
+            ),
+        '/admin_dashboard':
+            (context) => AdminAuthCheck(
+              adminWidget: AdminOrderDashboard(),
+              userWidget: UnauthorizedScreen()
+            ),
+        
+        
+
+        
         
       },
     );

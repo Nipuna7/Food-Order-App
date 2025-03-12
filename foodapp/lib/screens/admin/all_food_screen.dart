@@ -81,6 +81,13 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
                     ? _buildEmptyView()
                     : _buildFoodsGrid(),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.pushNamed(context, '/admin_food_adding_screen');
+        },
+        backgroundColor: Color(0xFFFF6B01),
+        child: Icon(Icons.add, color: Colors.white),
+      ),
     );
   }
 

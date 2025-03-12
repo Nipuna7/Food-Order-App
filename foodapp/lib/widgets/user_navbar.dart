@@ -63,7 +63,7 @@ class UserNavbar extends StatelessWidget {
               if (index == 2) {
                 
                 Future.delayed(Duration.zero, () {
-                  Navigator.pushNamed(context, '');
+                  Navigator.pushNamed(context, '/all_order_screen');
                 });
               }
 

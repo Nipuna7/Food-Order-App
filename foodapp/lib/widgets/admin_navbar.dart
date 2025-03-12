@@ -47,7 +47,7 @@ class AdminNavbar extends StatelessWidget {
               if (index == 0) {
                 
                 Future.delayed(Duration.zero, () {
-                  Navigator.pushNamed(context, '/admin_home');
+                  Navigator.pushNamed(context, '/admin_dashboard');
                 });
               }
 
@@ -63,7 +63,7 @@ class AdminNavbar extends StatelessWidget {
               if (index == 2) {
                 
                 Future.delayed(Duration.zero, () {
-                  Navigator.pushNamed(context, '/admin_food_adding_screen');
+                  Navigator.pushNamed(context, '/admin_order');
                 });
               }
 
@@ -71,7 +71,7 @@ class AdminNavbar extends StatelessWidget {
               if (index == 3) {
                 
                 Future.delayed(Duration.zero, () {
-                  Navigator.pushNamed(context, '');
+                  Navigator.pushNamed(context, '/user_detail');
                 });
               }
 
@@ -98,14 +98,14 @@ class AdminNavbar extends StatelessWidget {
                 currentIndex == 1,
               ),
               _buildBottomNavigationBarItem(
-                Icons.add_outlined,
-                Icons.add,
-                'Add Food',
+                Icons.assignment_rounded,
+                Icons.assignment,
+                'Orders',
                 currentIndex == 2,
               ),
               _buildBottomNavigationBarItem(
-                Icons.person_outline,
-                Icons.person,
+                Icons.assignment_ind_outlined,
+                Icons.assignment_ind,
                 'Users',
                 currentIndex == 3,
               ),

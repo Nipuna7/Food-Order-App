@@ -332,4 +332,24 @@ class AuthService {
       return null;
     }
   }
+
+  // Fetch all registered users excluding the admin
+  Future<List<UserModel>> getAllUsersExcludingAdmin() async {
+    try {
+      // Query the 'users' collection in Firestore
+      QuerySnapshot querySnapshot = await _firestore.collection('users').get();
+
+      // Convert the documents to UserModel objects and filter out the admin
+      List<UserModel> users = querySnapshot.docs
+          .map((doc) => UserModel.fromMap(doc.data() as Map<String, dynamic>))
+          .where((user) => !user.isAdmin && user.email != _adminEmail) // Exclude admin
+          .toList();
+
+      return users;
+    } catch (e) {
+      debugPrint("Error fetching all users: ${e.toString()}");
+      throw Exception('Failed to fetch users: ${e.toString()}');
+    }
+  }
+
 }

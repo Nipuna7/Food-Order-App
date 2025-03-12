@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/cart_item_model.dart';
+import 'package:foodapp/screens/user/checkout_screen.dart';
 import 'package:foodapp/services/cart_service.dart';
 import 'dart:convert';
 
@@ -532,12 +533,16 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   void _proceedToCheckout() {
-    // TODO: Navigate to checkout screen
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Proceeding to checkout...'),
         backgroundColor: Colors.green,
       ),
+    );
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => CheckoutScreen(userId: widget.userId,)),
     );
   }
 }
