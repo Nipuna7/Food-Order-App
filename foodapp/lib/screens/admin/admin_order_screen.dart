@@ -4,9 +4,10 @@ import 'package:foodapp/models/user_model.dart';
 import 'package:foodapp/services/admin_orders_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
+import 'package:foodapp/screens/admin/admin_order_details_screen.dart';
 
 class AdminOrderScreen extends StatefulWidget {
-  const AdminOrderScreen({Key? key}) : super(key: key);
+  const AdminOrderScreen({super.key});
 
   @override
   _AdminOrderScreenState createState() => _AdminOrderScreenState();
@@ -18,7 +19,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
   late TabController _tabController;
   
   List<OrderModel> _orders = [];
-  Map<String, UserModel?> _userCache = {};
+  final Map<String, UserModel?> _userCache = {};
   bool _isLoading = true;
   String? _errorMessage;
   
@@ -109,6 +110,8 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Order status updated to $newStatus')),
         );
+        
+        // Refresh orders to update the UI
         _fetchOrders();
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -120,6 +123,46 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
         SnackBar(content: Text('Error: ${e.toString()}')),
       );
     }
+  }
+  
+  // New method to handle order cancellation with confirmation dialog
+  Future<void> _showCancelConfirmationDialog(String orderId) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Cancel Order'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to cancel this order?'),
+                Text('This action cannot be undone.', 
+                  style: TextStyle(color: Colors.red[700], fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: Text('Yes, Cancel Order', 
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _updateOrderStatus(orderId, 'cancelled');
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   String _getOrderSummary(OrderModel order) {
@@ -171,11 +214,24 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
                                 style: TextStyle(color: Colors.white),
                               ),
                             ),
-                            title: Text(
-                              'Order #${order.id.substring(0, 8)}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                              ),
+                            title: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Order #${order.id.substring(0, 8)}',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                                // Add a quick cancel button for non-cancelled orders
+                                // if (order.status != 'cancelled')
+                                //   IconButton(
+                                //     icon: Icon(Icons.cancel, color: Colors.red),
+                                //     tooltip: 'Cancel Order',
+                                //     onPressed: () => _showCancelConfirmationDialog(order.id),
+                                //   ),
+                              ],
                             ),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,23 +300,53 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
                                       ],
                                     ),
                                     SizedBox(height: 16),
-                                    Text(
-                                      'Update Status:',
-                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          'Update Status:',
+                                          style: TextStyle(fontWeight: FontWeight.bold),
+                                        ),
+                                        // Add a more visible Cancel button
+                                        if (order.status != 'cancelled')
+                                          ElevatedButton.icon(
+                                            icon: Icon(Icons.cancel),
+                                            label: Text('Cancel Order'),
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.red,
+                                              foregroundColor: Colors.white,
+                                            ),
+                                            onPressed: () => _showCancelConfirmationDialog(order.id),
+                                          ),
+                                      ],
                                     ),
                                     SizedBox(height: 8),
-                                    SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Row(
-                                        children: [
-                                          _buildStatusButton(order.id, 'pending', order.status),
-                                          SizedBox(width: 8),
-                                          _buildStatusButton(order.id, 'processing', order.status),
-                                          SizedBox(width: 8),
-                                          _buildStatusButton(order.id, 'delivered', order.status),
-                                          SizedBox(width: 8),
-                                          _buildStatusButton(order.id, 'cancelled', order.status),
-                                        ],
+                                    SizedBox(height: 8),
+                                    SizedBox(height: 8),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Ensures even spacing
+                                      children: [
+                                        Flexible(child: _buildStatusButton(order.id, 'pending', order.status)),
+                                        Flexible(child: _buildStatusButton(order.id, 'process', order.status)),
+                                        Flexible(child: _buildStatusButton(order.id, 'delivered', order.status)),
+                                      ],
+                                    ),
+                                    SizedBox(height: 16),
+                                    ElevatedButton.icon(
+                                      icon: Icon(Icons.info_outline),
+                                      label: Text('View Full Details'),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) => AdminOrderDetailScreen(orderId: order.id),
+                                          ),
+                                        ).then((_) => _fetchOrders()); // Refresh after returning
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue,
+                                        foregroundColor: Colors.white,
+                                        minimumSize: Size(double.infinity, 36),
                                       ),
                                     ),
                                   ],
@@ -273,8 +359,8 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
                     ),
       floatingActionButton: FloatingActionButton(
         onPressed: _fetchOrders,
-        child: Icon(Icons.refresh),
         tooltip: 'Refresh Orders',
+        child: Icon(Icons.refresh),
       ),
     );
   }
@@ -288,7 +374,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
         backgroundColor: isCurrentStatus ? _getStatusColor(status) : Colors.grey.shade200,
         foregroundColor: isCurrentStatus ? Colors.white : Colors.black,
       ),
-      child: Text(status.capitalize()),
+      child: Text(StringExtension(status).capitalize()),
     );
   }
 
@@ -311,8 +397,8 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
 // Extension for string capitalization
 extension StringExtension on String {
   String capitalize() {
-    return this.isNotEmpty 
-        ? '${this[0].toUpperCase()}${this.substring(1)}'
+    return isNotEmpty 
+        ? '${this[0].toUpperCase()}${substring(1)}'
         : '';
   }
 }

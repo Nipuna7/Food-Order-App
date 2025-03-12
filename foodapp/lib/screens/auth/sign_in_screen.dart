@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/user_model.dart';
 import 'package:foodapp/screens/auth/froget_password_screen.dart';
-import 'package:foodapp/screens/user/home_screen.dart';
 import 'package:foodapp/screens/auth/sign_up_screen.dart';
 import 'package:foodapp/services/auth_service.dart';
 
@@ -292,7 +291,7 @@ class _SignInScreenState extends State<SignInScreen> {
         // Check if user is admin and navigate accordingly
         if (user.isAdmin) {
           // Navigate to Admin Screen
-          Navigator.pushReplacementNamed(context, '/admin_home');
+          Navigator.pushReplacementNamed(context, '/admin_dashboard');
         } else {
           // Navigate to User Home Screen
           Navigator.pushNamed(context, '/');
@@ -335,7 +334,7 @@ class _SignInScreenState extends State<SignInScreen> {
         // Check if user is admin and navigate accordingly
         if (user.isAdmin) {
           // Navigate to Admin Screen
-          Navigator.pushReplacementNamed(context, '/admin_home');
+          Navigator.pushReplacementNamed(context, '/admin_dashboard');
         } else {
           // Navigate to User Home Screen
            Navigator.pushNamed(context, '/');

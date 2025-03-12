@@ -12,9 +12,9 @@ class CheckoutScreen extends StatefulWidget {
   final String userId;
   
   const CheckoutScreen({
-    Key? key, 
+    super.key, 
     required this.userId,
-  }) : super(key: key);
+  });
 
   @override
   _CheckoutScreenState createState() => _CheckoutScreenState();

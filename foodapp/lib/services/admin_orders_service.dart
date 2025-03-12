@@ -53,7 +53,7 @@ class AdminOrderService {
         }
         
         orders.add(OrderModel(
-          id: data['id'],
+          id: doc.id, // Use document ID directly to ensure consistency
           userId: data['userId'],
           items: items,
           totalAmount: data['totalAmount'],
@@ -72,34 +72,35 @@ class AdminOrderService {
 
   // Get user details by ID
   Future<UserModel?> getUserById(String userId) async {
-  try {
-    DocumentSnapshot userDoc = await _firestore.collection('users').doc(userId).get();
-    
-    if (userDoc.exists) {
-      Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+    try {
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(userId).get();
       
-      return UserModel(
-        uid: userId,
-        email: data['email'] ?? '',
-        name: data['name'] ?? '',
-        contactNumber: data['phoneNumber'] ?? '',  // Map phoneNumber to contactNumber
-        profilePicture: data['profilePicture'] ?? '',
-        isAdmin: data['isAdmin'] ?? false,
-      );
+      if (userDoc.exists) {
+        Map<String, dynamic> data = userDoc.data() as Map<String, dynamic>;
+        
+        return UserModel(
+          uid: userId,
+          email: data['email'] ?? '',
+          name: data['name'] ?? '',
+          contactNumber: data['phoneNumber'] ?? '',  // Map phoneNumber to contactNumber
+          profilePicture: data['profilePicture'] ?? '',
+          isAdmin: data['isAdmin'] ?? false,
+        );
+      }
+      
+      return null;
+    } catch (e) {
+      debugPrint("Error getting user by ID: ${e.toString()}");
+      return null;
     }
-    
-    return null;
-  } catch (e) {
-    debugPrint("Error getting user by ID: ${e.toString()}");
-    return null;
   }
-}
 
   // Update order status
   Future<bool> updateOrderStatus(String orderId, String newStatus) async {
     try {
       await _firestore.collection('orders').doc(orderId).update({
         'status': newStatus,
+        'lastUpdated': FieldValue.serverTimestamp(), // Add timestamp for when status was last updated
       });
       
       return true;
@@ -137,7 +138,7 @@ class AdminOrderService {
         }
         
         return OrderModel(
-          id: data['id'],
+          id: doc.id, // Use document ID directly
           userId: data['userId'],
           items: items,
           totalAmount: data['totalAmount'],
@@ -154,7 +155,7 @@ class AdminOrderService {
     }
   }
 
-  // Get order statistics
+  // Get order statistics - UPDATED to match the statuses used in the app
   Future<Map<String, dynamic>> getOrderStatistics() async {
     try {
       QuerySnapshot snapshot = await _firestore
@@ -166,9 +167,7 @@ class AdminOrderService {
       Map<String, int> statusCounts = {
         'pending': 0,
         'processing': 0,
-        'shipping': 0,
         'delivered': 0,
-        'completed': 0,
         'cancelled': 0,
       };
       
@@ -195,12 +194,15 @@ class AdminOrderService {
         'statusCounts': {
           'pending': 0,
           'processing': 0,
-          'shipping': 0,
           'delivered': 0,
-          'completed': 0,
           'cancelled': 0,
         },
       };
     }
+  }
+  
+  // Cancel an order
+  Future<bool> cancelOrder(String orderId) async {
+    return await updateOrderStatus(orderId, 'cancelled');
   }
 }

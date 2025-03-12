@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 class AdminOrderDetailScreen extends StatefulWidget {
   final String orderId;
 
-  const AdminOrderDetailScreen({Key? key, required this.orderId}) : super(key: key);
+  const AdminOrderDetailScreen({super.key, required this.orderId});
 
   @override
   _AdminOrderDetailScreenState createState() => _AdminOrderDetailScreenState();
@@ -117,123 +117,131 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
   }
 
   Widget _buildOrderStatusHeader(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      color: _getStatusColor(_order!.status).withOpacity(0.2),
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
+  return Container(
+    width: double.infinity,
+    color: _getStatusColor(_order!.status).withOpacity(0.2),
+    padding: EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(  // Ensure text fits within available space
+              child: Text(
                 'Order #${_order!.id}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),
+                overflow: TextOverflow.ellipsis, // Prevents text from overflowing
               ),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getStatusColor(_order!.status),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Text(
-                  _order!.status.toUpperCase(),
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Placed on: ${DateFormat('MMM dd, yyyy • hh:mm a').format(_order!.orderDate)}',
-            style: TextStyle(
-              color: Colors.grey[700],
-              fontSize: 14,
             ),
+            SizedBox(width: 8), // Space between elements
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+              decoration: BoxDecoration(
+                color: _getStatusColor(_order!.status),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text(
+                _order!.status.toUpperCase(),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 8),
+        Text(
+          'Placed on: ${DateFormat('MMM dd, yyyy • hh:mm a').format(_order!.orderDate)}',
+          style: TextStyle(
+            color: Colors.grey[700],
+            fontSize: 14,
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildCustomerInfo() {
-    return Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Customer Information',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+  return Padding(
+    padding: EdgeInsets.all(16),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Customer Information',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
           ),
-          SizedBox(height: 8),
-          Card(
-            elevation: 2,
-            child: Padding(
-              padding: EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+        ),
+        SizedBox(height: 8),
+        Card(
+          elevation: 2,
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.person, size: 18, color: Colors.grey),
+                    SizedBox(width: 8),
+                    Text(
+                      _customer?.name ?? 'Unknown Customer',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.email, size: 18, color: Colors.grey),
+                    SizedBox(width: 8),
+                    Text(_customer?.email ?? 'No email provided'),
+                  ],
+                ),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    Icon(Icons.phone, size: 18, color: Colors.grey),
+                    SizedBox(width: 8),
+                    Text(_customer?.contactNumber.isNotEmpty == true 
+                      ? _customer!.contactNumber 
+                      : 'No phone number'),
+                  ],
+                ),
+                if (_order!.deliveryAddress != null && _order!.deliveryAddress!.isNotEmpty) ...[
+                  SizedBox(height: 8),
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.person, size: 18, color: Colors.grey),
+                      Icon(Icons.location_on, size: 18, color: Colors.grey),
                       SizedBox(width: 8),
-                      Text(
-                        _customer?.name ?? 'Unknown Customer',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                      Expanded(
+                        child: Text(_order!.deliveryAddress!),
                       ),
                     ],
                   ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.email, size: 18, color: Colors.grey),
-                      SizedBox(width: 8),
-                      Text(_customer?.email ?? 'No email provided'),
-                    ],
-                  ),
-                  SizedBox(height: 8),
-                  Row(
-                    children: [
-                      Icon(Icons.phone, size: 18, color: Colors.grey),
-                      SizedBox(width: 8),
-                      Text(_customer?.contactNumber ?? 'No phone number'),
-                    ],
-                  ),
-                  if (_order!.deliveryAddress != null && _order!.deliveryAddress!.isNotEmpty) ...[
-                    SizedBox(height: 8),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Icon(Icons.location_on, size: 18, color: Colors.grey),
-                        SizedBox(width: 8),
-                        Expanded(
-                          child: Text(_order!.deliveryAddress!),
-                        ),
-                      ],
-                    ),
-                  ],
                 ],
-              ),
+              ],
             ),
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 
   Widget _buildOrderItems() {
     return Padding(
@@ -469,8 +477,8 @@ class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
 // Extension for string capitalization
 extension StringExtension on String {
   String capitalize() {
-    return this.isNotEmpty 
-        ? '${this[0].toUpperCase()}${this.substring(1)}'
+    return isNotEmpty 
+        ? '${this[0].toUpperCase()}${substring(1)}'
         : '';
   }
 }

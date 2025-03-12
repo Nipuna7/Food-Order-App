@@ -7,10 +7,10 @@ class AdminAuthCheck extends StatefulWidget {
   final Widget userWidget;
 
   const AdminAuthCheck({
-    Key? key,
+    super.key,
     required this.adminWidget,
     required this.userWidget,
-  }) : super(key: key);
+  });
 
   @override
   _AdminAuthCheckState createState() => _AdminAuthCheckState();

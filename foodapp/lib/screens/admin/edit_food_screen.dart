@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/food_model.dart';
 import 'package:foodapp/services/food_service.dart';

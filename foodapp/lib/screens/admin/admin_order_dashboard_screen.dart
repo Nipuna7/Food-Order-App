@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/services/admin_orders_service.dart';
 import 'package:foodapp/screens/admin/admin_order_screen.dart';
+import 'package:foodapp/screens/admin/admin_order_details_screen.dart';
 import 'package:foodapp/models/order_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 
 class AdminOrderDashboard extends StatefulWidget {
-  const AdminOrderDashboard({Key? key}) : super(key: key);
+  const AdminOrderDashboard({super.key});
 
   @override
   _AdminOrderDashboardState createState() => _AdminOrderDashboardState();
@@ -22,9 +23,7 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
     'statusCounts': {
       'pending': 0,
       'processing': 0,
-      'shipping': 0,
       'delivered': 0,
-      'completed': 0,
       'cancelled': 0,
     },
   };
@@ -83,7 +82,7 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Order Dashboard'),
+        title: Text('Admin Dashboard'),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -91,6 +90,7 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
             tooltip: 'Refresh Dashboard',
           ),
         ],
+        
       ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
@@ -203,9 +203,7 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
     Map<String, Color> statusColors = {
       'pending': Colors.orange,
       'processing': Colors.blue,
-      'shipping': Colors.purple,
       'delivered': Colors.green,
-      'completed': Colors.teal,
       'cancelled': Colors.red,
     };
     
@@ -321,6 +319,7 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
       ),
       child: InkWell(
         onTap: () {
+          // Correctly pass the order ID to the AdminOrderDetailScreen
           Navigator.push(
             context,
             MaterialPageRoute(
@@ -337,7 +336,7 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    'Order #${order.id}',
+                    'Order #${order.id.substring(0, 8)}',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 16,
@@ -401,6 +400,7 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
                   Spacer(),
                   TextButton(
                     onPressed: () {
+                      // Correctly pass the order ID to the AdminOrderDetailScreen
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -408,10 +408,10 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
                         ),
                       ).then((_) => _loadDashboardData());
                     },
-                    child: Text('View Details'),
                     style: TextButton.styleFrom(
                       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     ),
+                    child: Text('View Details'),
                   ),
                 ],
               ),
@@ -428,12 +428,8 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
         return Colors.orange;
       case 'processing':
         return Colors.blue;
-      case 'shipping':
-        return Colors.purple;
       case 'delivered':
         return Colors.green;
-      case 'completed':
-        return Colors.teal;
       case 'cancelled':
         return Colors.red;
       default:
@@ -444,23 +440,5 @@ class _AdminOrderDashboardState extends State<AdminOrderDashboard> {
   String _capitalizeStatus(String status) {
     if (status.isEmpty) return '';
     return status[0].toUpperCase() + status.substring(1);
-  }
-}
-
-class AdminOrderDetailScreen extends StatefulWidget {
-  final String orderId;
-
-  const AdminOrderDetailScreen({Key? key, required this.orderId}) : super(key: key);
-
-  @override
-  _AdminOrderDetailScreenState createState() => _AdminOrderDetailScreenState();
-}
-
-// Include this stub to resolve the reference in the code
-// Since the actual implementation is in another file
-class _AdminOrderDetailScreenState extends State<AdminOrderDetailScreen> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold();
   }
 }

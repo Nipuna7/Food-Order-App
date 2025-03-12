@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/widgets/admin_navbar.dart';
-import 'package:foodapp/widgets/user_navbar.dart';
 
 
 class AdminHomeScreen extends StatefulWidget {

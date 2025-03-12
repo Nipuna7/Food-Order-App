@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 class OrderDetailScreen extends StatelessWidget {
   final OrderModel order;
 
-  const OrderDetailScreen({Key? key, required this.order}) : super(key: key);
+  const OrderDetailScreen({super.key, required this.order});
 
   @override
   Widget build(BuildContext context) {

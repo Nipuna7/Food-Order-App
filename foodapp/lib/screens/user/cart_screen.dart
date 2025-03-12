@@ -8,9 +8,9 @@ class CartScreen extends StatefulWidget {
   final String userId;
   
   const CartScreen({
-    Key? key, 
+    super.key, 
     required this.userId,
-  }) : super(key: key);
+  });
 
   @override
   _CartScreenState createState() => _CartScreenState();

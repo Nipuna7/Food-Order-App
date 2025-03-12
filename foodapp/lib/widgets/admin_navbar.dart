@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:foodapp/screens/user/profile_screen.dart';
-import '../models/user_model.dart';
 
 class AdminNavbar extends StatelessWidget {
   final int currentIndex;
