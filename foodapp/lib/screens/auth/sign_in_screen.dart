@@ -291,7 +291,7 @@ class _SignInScreenState extends State<SignInScreen> {
         // Check if user is admin and navigate accordingly
         if (user.isAdmin) {
           // Navigate to Admin Screen
-          Navigator.pushReplacementNamed(context, '/admin_dashboard');
+          Navigator.pushReplacementNamed(context, '/admin_home');
         } else {
           // Navigate to User Home Screen
           Navigator.pushNamed(context, '/');
@@ -334,7 +334,7 @@ class _SignInScreenState extends State<SignInScreen> {
         // Check if user is admin and navigate accordingly
         if (user.isAdmin) {
           // Navigate to Admin Screen
-          Navigator.pushReplacementNamed(context, '/admin_dashboard');
+          Navigator.pushReplacementNamed(context, '/admin_home');
         } else {
           // Navigate to User Home Screen
            Navigator.pushNamed(context, '/');

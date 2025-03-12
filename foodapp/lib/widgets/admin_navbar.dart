@@ -45,7 +45,7 @@ class AdminNavbar extends StatelessWidget {
               if (index == 0) {
                 
                 Future.delayed(Duration.zero, () {
-                  Navigator.pushNamed(context, '/admin_dashboard');
+                  Navigator.pushNamed(context, '/admin_home');
                 });
               }
 
