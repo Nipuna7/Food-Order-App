@@ -171,72 +171,88 @@ class _AllFoodsScreenState extends State<AllFoodsScreen> {
     });
   }
 
+  Future<bool> _onWillPop() async {
+    // Navigate to the root route when back button is pressed
+    Navigator.of(context).pushReplacementNamed('/');
+    // Return false to prevent default back navigation
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: _isSearching
-            ? TextField(
-                controller: _searchController,
-                autofocus: true,
-                decoration: InputDecoration(
-                  hintText: 'Search foods...',
-                  border: InputBorder.none,
-                  hintStyle: TextStyle(color: Colors.grey),
-                ),
-                style: TextStyle(color: Colors.black),
-              )
-            : Text(
-                'Food Menu',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 18,
-                ),
-              ),
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
         backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: _isSearching ? false : true,
-        leading: _isSearching
-            ? IconButton(
-                icon: Icon(Icons.arrow_back, color: Colors.black),
-                onPressed: _toggleSearch,
-              )
-            : null,
-        actions: [
-          IconButton(
-            icon: Icon(
-              _isSearching ? Icons.clear : Icons.search,
-              color: Colors.black,
+        appBar: AppBar(
+          title: _isSearching
+              ? TextField(
+                  controller: _searchController,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    hintText: 'Search foods...',
+                    border: InputBorder.none,
+                    hintStyle: TextStyle(color: Colors.grey),
+                  ),
+                  style: TextStyle(color: Colors.black),
+                )
+              : Text(
+                  'Food Menu',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                  ),
+                ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          centerTitle: _isSearching ? false : true,
+          leading: _isSearching
+              ? IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: _toggleSearch,
+                )
+              : IconButton(
+                  icon: Icon(Icons.arrow_back, color: Colors.black),
+                  onPressed: () {
+                    Navigator.of(context).pushReplacementNamed('/');
+                  },
+                ),
+          actions: [
+            IconButton(
+              icon: Icon(
+                _isSearching ? Icons.clear : Icons.search,
+                color: Colors.black,
+              ),
+              onPressed: _isSearching
+                  ? () {
+                      _searchController.clear();
+                    }
+                  : _toggleSearch,
             ),
-            onPressed: _isSearching
-                ? () {
-                    _searchController.clear();
-                  }
-                : _toggleSearch,
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.shopping_cart,
-              color: Colors.black,
+            IconButton(
+              icon: Icon(
+                Icons.shopping_cart,
+                color: Colors.black,
+              ),
+              onPressed: _goToCart,
             ),
-            onPressed: _goToCart,
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: _isLoading
-            ? Center(child: CircularProgressIndicator(color: Color(0xFFFF6B01)))
-            : _errorMessage != null
-                ? _buildErrorView()
-                : _filteredFoods.isEmpty
-                    ? _buildEmptySearchView()
-                    : _buildFoodsGrid(),
+          ],
+        ),
+        body: SafeArea(
+          child: _isLoading
+              ? Center(child: CircularProgressIndicator(color: Color(0xFFFF6B01)))
+              : _errorMessage != null
+                  ? _buildErrorView()
+                  : _filteredFoods.isEmpty
+                      ? _buildEmptySearchView()
+                      : _buildFoodsGrid(),
+        ),
       ),
     );
   }
 
+  // Rest of your widget methods remain the same
   Widget _buildEmptySearchView() {
     return Center(
       child: Padding(

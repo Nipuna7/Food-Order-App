@@ -41,47 +41,63 @@ class _ProfileScreenState extends State<ProfileScreen> {
     });
   }
 
+  // Handle back button press
+  Future<bool> _onWillPop() async {
+    // Navigate to the root route
+    Navigator.of(context).pushReplacementNamed('/');
+    // Return false to prevent default back navigation
+    return false;
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Color(0xFFFF6B01),
-        title: Text(
-          'Profile',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.edit, color: Colors.white,),
-            onPressed: () => _navigateToEditProfile(),
-            
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        appBar: AppBar(
+          backgroundColor: Color(0xFFFF6B01),
+          title: Text(
+            'Profile',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
-        ],
-      ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator(color: Color(0xFFFF6B01)))
-          : _currentUser == null
-              ? Center(child: Text("Failed to load user data"))
-              : SingleChildScrollView(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(height: 20),
-                        _buildProfileImage(),
-                        SizedBox(height: 24),
-                        _buildProfileName(),
-                        SizedBox(height: 40),
-                        _buildInfoSection(),
-                        SizedBox(height: 40),
-                        _buildLogoutButton(),
-                      ],
+          centerTitle: true,
+          leading: IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              Navigator.of(context).pushReplacementNamed('/');
+            },
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.edit, color: Colors.white,),
+              onPressed: () => _navigateToEditProfile(),
+            ),
+          ],
+        ),
+        body: _isLoading
+            ? Center(child: CircularProgressIndicator(color: Color(0xFFFF6B01)))
+            : _currentUser == null
+                ? Center(child: Text("Failed to load user data"))
+                : SingleChildScrollView(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 20),
+                          _buildProfileImage(),
+                          SizedBox(height: 24),
+                          _buildProfileName(),
+                          SizedBox(height: 40),
+                          _buildInfoSection(),
+                          SizedBox(height: 40),
+                          _buildLogoutButton(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+      ),
     );
   }
 
