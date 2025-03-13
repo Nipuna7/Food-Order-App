@@ -332,7 +332,7 @@ class _AdminOrderScreenState extends State<AdminOrderScreen> with TickerProvider
                                         mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Ensures even spacing
                                         children: [
                                           Flexible(child: _buildStatusButton(order.id, 'pending', order.status)),
-                                          Flexible(child: _buildStatusButton(order.id, 'processing', order.status)),
+                                          Flexible(child: _buildStatusButton(order.id, 'process', order.status)),
                                           Flexible(child: _buildStatusButton(order.id, 'delivered', order.status)),
                                         ],
                                       ),

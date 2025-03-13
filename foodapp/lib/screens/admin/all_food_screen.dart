@@ -19,7 +19,7 @@ class _AdminAllFoodsScreenState extends State<AdminAllFoodsScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   bool _isSearching = false;
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
 
   FoodModel? _food;
   bool _isDeleting = false;

@@ -83,7 +83,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '${_getGreeting()}',
+          _getGreeting(),
           style: const TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,

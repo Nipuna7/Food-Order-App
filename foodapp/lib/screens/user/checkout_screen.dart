@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:foodapp/models/cart_item_model.dart';
-import 'package:foodapp/models/order_model.dart';
-import 'package:foodapp/screens/user/order_screen.dart';
 
 import 'package:foodapp/services/cart_service.dart';
 import 'package:foodapp/services/order_service.dart';
-import 'package:foodapp/services/auth_service.dart';
 import 'dart:convert';
 
 class CheckoutScreen extends StatefulWidget {
